@@ -1,7 +1,7 @@
 # segment-anything-edge-detection
 
 <p>
-<img src='assets/fish.jpg' height=250px /> <img src='assets/prob.png' height=250px /> <img src='assets/edge.png' height=250px />
+<img src='assets/fish.jpg' height=200px /> <img src='assets/prob.png' height=200px /> <img src='assets/edge.png' height=200px />
 </p>
 
 This repository provides code for performing edge detection using the Automatic Mask Generation (AMG) of Segment Anything Model (SAM). Since the code used in the paper is not currently available to the public, this implementation is based on the descriptions provided in the paper.
