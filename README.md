@@ -16,9 +16,9 @@ python main.py --pp threshold
 ```
 
 ## TODO
-- The thick lines on the probability map split into two lines after Edge NMS, so there is a need to improve the accuracy. Therefore, edge detection using thresholds for probability maps is currently the default setting. If you know something about edge detection, feel free to submit a pull request.
+- The thick lines on the probability map split into two lines after Edge NMS, so there is a need to improve the accuracy. Therefore, edge detection using probability map thresholds is currently the default. If you can improve it using Edge NMS, feel free to submit a pull request.
 - If time permits, I may create a pipeline to perform an end-to-end evaluation of SAM's edge detection performance using the BSDS dataset.
 
 ## Reference
-The code in this repository mainly uses code from the following two repositories. Thanks you.
+The code in this repository mainly uses code from the following two repositories. Thank you.
 - [segment-anything](https://github.com/facebookresearch/segment-anything)
