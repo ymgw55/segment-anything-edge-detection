@@ -40,6 +40,7 @@ def main():
             p_max = np.maximum(p_max, p)
 
     edges = normalize_image(p_max)
+    edges = cv2.GaussianBlur(edges, (5, 5), 0)
     edge_detection = cv2.ximgproc.createStructuredEdgeDetection(
         '/working/model/model.yml.gz')
     orimap = edge_detection.computeOrientation(edges)
