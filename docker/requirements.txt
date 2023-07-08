@@ -1,6 +1,6 @@
 # util
 pandas==1.4.2
-scipy==1.8.0
+scipy>=1.10.0
 fire==0.4.0
 wandb==0.12.12
 isort==5.10.1
@@ -10,7 +10,7 @@ numpy==1.23.1
 
 # nlp
 gensim
-transformers==4.17.0
+transformers>=4.30.0
 accelerate
 datasets >= 1.8.0
 sentencepiece != 0.1.92
@@ -20,7 +20,7 @@ nltk
 py7zr
 
 # others
-protobuf==3.20.0
+protobuf>=3.20.2
 matplotlib
 fire
 cython
