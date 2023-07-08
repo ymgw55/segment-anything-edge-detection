@@ -21,9 +21,9 @@ def normalize_image(image):
 
 
 def get_args():
-    # kernel_size
+    # gaussian kernel size for post processing before edge nms
     parser = argparse.ArgumentParser(description='Test output')
-    parser.add_argument('--kernel_size', type=int, default=5,
+    parser.add_argument('--kernel_size', type=int, default=0,
                         help='kernel size')
     args = parser.parse_args()
     return args

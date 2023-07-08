@@ -1,0 +1,31 @@
+# util
+pandas==1.4.2
+scipy==1.8.0
+fire==0.4.0
+wandb==0.12.12
+isort==5.10.1
+scikit-learn==1.0.2
+jupyterlab==3.3.2
+numpy==1.23.1
+
+# nlp
+gensim
+transformers==4.17.0
+accelerate
+datasets >= 1.8.0
+sentencepiece != 0.1.92
+protobuf
+rouge-score
+nltk
+py7zr
+
+# others
+protobuf==3.20.0
+matplotlib
+fire
+cython
+scikit-image
+
+
+# mygene
+git+https://github.com/biothings/biothings_client.py#egg=biothings_client
