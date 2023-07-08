@@ -6,7 +6,7 @@
 
 This repository provides code for performing edge detection using the Automatic Mask Generation (AMG) of the Segment Anything Model (SAM). Since the code used in the paper is not currently available to the public, this implementation is based on the descriptions provided in the paper.
 
-The image on the left is taken from the BSDS dataset. The center is the ground truth edge. The image on the right is the result of applying edge detection.
+The image on the left is taken from the BSDS. The center is the ground truth edge. The image on the right is the result of applying edge detection.
 
 ## Requirements
 This repository assumes that you can already use a SAM model. 
@@ -46,9 +46,6 @@ Then run:
 ```bash
 python evaluate.py /working/data/BSR_bsds500/BSR/ ../output/pred/${pp_name} test --thresholds 99
 ```
-
-## TODO
-- If time permits, I may create a pipeline to perform an end-to-end evaluation of SAM's edge detection performance using the BSDS dataset.
 
 ## Reference
 The code in this repository mainly uses code from the following two repositories. Thank you.
