@@ -1,5 +1,4 @@
-import os
-import os.path as osp
+from pathlib import Path
 
 import cv2
 import matplotlib.pyplot as plt
@@ -26,7 +25,7 @@ def main():
     sam.to(device=device)
     generator = SamAutomaticMaskAndProbabilityGenerator(sam)
 
-    img_path = osp.join('assets/fish.jpg')
+    img_path = 'assets/fish.jpg'
     image = cv2.imread(img_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     masks = generator.generate(image)
@@ -40,15 +39,14 @@ def main():
             p_max = np.maximum(p_max, p)
 
     edges = normalize_image(p_max)
-    edges = cv2.GaussianBlur(edges, (5, 5), 0)
     edge_detection = cv2.ximgproc.createStructuredEdgeDetection(
         '/working/model/model.yml.gz')
     orimap = edge_detection.computeOrientation(edges)
     edges = edge_detection.edgesNms(edges, orimap)
 
     # make output directory
-    os.makedirs('output', exist_ok=True)
-    plt.imsave('output/edge.png', edges, cmap='binary')
+    Path('output/pred/example').mkdir(parents=True, exist_ok=True)
+    plt.imsave('output/pred/example/edge.png', edges, cmap='binary')
 
 
 if __name__ == "__main__":
