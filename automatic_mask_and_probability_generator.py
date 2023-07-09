@@ -63,10 +63,10 @@ def batched_sobel_filter(probs: torch.Tensor, masks: torch.Tensor
     probs = probs.unsqueeze(1)
 
     # sobel_filter: [1, 1, 3, 3]
-    sobel_filter_x = torch.tensor([[[1, 0, -1], [2, 0, -2], [1, 0, -1]]],
+    sobel_filter_x = torch.tensor([[[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]],
                                   dtype=torch.float32
                                   ).to(probs.device).unsqueeze(0)
-    sobel_filter_y = torch.tensor([[[1, 2, 1], [0, 0, 0], [-1, -2, -1]]],
+    sobel_filter_y = torch.tensor([[[-1, -2, -1], [0, 0, 0], [1, 2, 1]]],
                                   dtype=torch.float32
                                   ).to(probs.device).unsqueeze(0)
 
@@ -82,12 +82,20 @@ def batched_sobel_filter(probs: torch.Tensor, masks: torch.Tensor
         # Convert binary mask to float
         mask = masks[i].float()
 
-        # Extract outer boundary of the mask
-        outer_boundary = F.max_pool2d(mask[None, None], kernel_size=3,
-                                      stride=1, padding=1) - mask
+        G_x = F.conv2d(mask[None, None], sobel_filter_x, padding=1)
+        G_y = F.conv2d(mask[None, None], sobel_filter_y, padding=1)
+        edge = torch.sqrt(G_x ** 2 + G_y ** 2)
+        outer_boundary = (edge > 0).float()
 
         # Set to zero values that don't touch the mask's outer boundary.
         probs[i, 0] = probs[i, 0] * outer_boundary
+
+        # Set to zero values for image border
+        margin = 5
+        probs[i, 0, 0:margin, :] = 0
+        probs[i, 0, -margin:, :] = 0
+        probs[i, 0, :, 0:margin] = 0
+        probs[i, 0, :, -margin:] = 0
 
     # Remove the channel dimension
     probs = probs.squeeze(1)

@@ -23,7 +23,7 @@ def normalize_image(image):
 def get_args():
     # gaussian kernel size for post processing before edge nms
     parser = argparse.ArgumentParser(description='Test output')
-    parser.add_argument('--kernel_size', type=int, default=0,
+    parser.add_argument('--kernel_size', type=int, default=3,
                         help='kernel size')
     args = parser.parse_args()
     return args
@@ -40,7 +40,7 @@ def main():
     kernel_size = args.kernel_size
 
     # make output directory
-    outut_dir = Path(f'output/pred/kernel_size{kernel_size}/test')
+    outut_dir = Path(f'output/pred/ks{kernel_size}/test')
     if outut_dir.exists():
         import shutil
         shutil.rmtree(outut_dir)
