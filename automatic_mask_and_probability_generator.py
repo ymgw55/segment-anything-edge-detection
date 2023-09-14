@@ -15,6 +15,8 @@ from segment_anything import SamAutomaticMaskGenerator
 from segment_anything.modeling import Sam
 from segment_anything.utils.amg import (MaskData, area_from_rle,
                                         batched_mask_to_box, box_xyxy_to_xywh,
+                                        batch_iterator,
+                                        uncrop_boxes_xyxy, uncrop_points,
                                         calculate_stability_score,
                                         coco_encode_rle, generate_crop_boxes,
                                         is_box_near_crop_edge,
@@ -246,6 +248,53 @@ class SamAutomaticMaskAndProbabilityGenerator(SamAutomaticMaskGenerator):
             curr_anns.append(ann)
 
         return curr_anns
+
+    def _process_crop(
+        self,
+        image: np.ndarray,
+        crop_box: List[int],
+        crop_layer_idx: int,
+        orig_size: Tuple[int, ...],
+    ) -> MaskData:
+        # Crop the image and calculate embeddings
+        x0, y0, x1, y1 = crop_box
+        cropped_im = image[y0:y1, x0:x1, :]
+        cropped_im_size = cropped_im.shape[:2]
+        self.predictor.set_image(cropped_im)
+
+        # Get points for this crop
+        points_scale = np.array(cropped_im_size)[None, ::-1]
+        points_for_image = self.point_grids[crop_layer_idx] * points_scale
+
+        # Generate masks for this crop in batches
+        data = MaskData()
+        for (points,) in batch_iterator(self.points_per_batch, points_for_image):
+            batch_data = self._process_batch(points, cropped_im_size, crop_box, orig_size)
+            data.cat(batch_data)
+            del batch_data
+        self.predictor.reset_image()
+
+        # Remove duplicates within this crop.
+        keep_by_nms = batched_nms(
+            data["boxes"].float(),
+            data["iou_preds"],
+            torch.zeros_like(data["boxes"][:, 0]),  # categories
+            iou_threshold=self.box_nms_thresh,
+        )
+        data.filter(keep_by_nms)
+
+        # Return to the original image frame
+        data["boxes"] = uncrop_boxes_xyxy(data["boxes"], crop_box)
+        data["points"] = uncrop_points(data["points"], crop_box)
+        data["crop_boxes"] = torch.tensor([crop_box for _ in range(len(data["rles"]))])
+
+        padded_probs = torch.zeros((data["probs"].shape[0], *orig_size),
+                                   dtype=torch.float32,
+                                   device=data["probs"].device)
+        padded_probs[:, y0:y1, x0:x1] = data["probs"]
+        data["probs"] = padded_probs
+
+        return data
 
     def _generate_masks(self, image: np.ndarray) -> MaskData:
         orig_size = image.shape[:2]
