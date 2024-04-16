@@ -43,7 +43,7 @@ def batched_mask_to_prob(masks: torch.Tensor) -> torch.Tensor:
     return probs
 
 
-def batched_sobel_filter(probs: torch.Tensor, masks: torch.Tensor
+def batched_sobel_filter(probs: torch.Tensor, masks: torch.Tensor, bzp: int
                          ) -> torch.Tensor:
     """
     For implementation, see section D.2 of the paper:
@@ -92,12 +92,13 @@ def batched_sobel_filter(probs: torch.Tensor, masks: torch.Tensor
         # Set to zero values that don't touch the mask's outer boundary.
         probs[i, 0] = probs[i, 0] * outer_boundary
 
-        # Set to zero values for image border
-        margin = 5
-        probs[i, 0, 0:margin, :] = 0
-        probs[i, 0, -margin:, :] = 0
-        probs[i, 0, :, 0:margin] = 0
-        probs[i, 0, :, -margin:] = 0
+        # Boundary zero padding (BZP). 
+        # See "Zero-Shot Edge Detection With SCESAME: Spectral 
+        # Clustering-Based Ensemble for Segment Anything Model Estimation".
+        probs[i, 0, 0:bzp, :] = 0
+        probs[i, 0, -bzp:, :] = 0
+        probs[i, 0, :, 0:bzp] = 0
+        probs[i, 0, :, -bzp:] = 0
 
     # Remove the channel dimension
     probs = probs.squeeze(1)
@@ -122,7 +123,8 @@ class SamAutomaticMaskAndProbabilityGenerator(SamAutomaticMaskGenerator):
         point_grids: Optional[List[np.ndarray]] = None,
         min_mask_region_area: int = 0,
         output_mode: str = "binary_mask",
-        nms_threshold: float = 0.7
+        nms_threshold: float = 0.7,
+        bzp: int = 0,
     ) -> None:
         """
         Using a SAM model, generates masks for the entire image.
@@ -186,6 +188,7 @@ class SamAutomaticMaskAndProbabilityGenerator(SamAutomaticMaskGenerator):
             output_mode,
         )
         self.nms_threshold = nms_threshold
+        self.bzp = bzp
 
     @torch.no_grad()
     def generate(self, image: np.ndarray) -> List[Dict[str, Any]]:
@@ -352,19 +355,18 @@ class SamAutomaticMaskAndProbabilityGenerator(SamAutomaticMaskGenerator):
         )
         del masks
 
-        # DO NOT filter by predicted IoU
-        # if self.pred_iou_thresh > 0.0:
-        #     keep_mask = data["iou_preds"] > self.pred_iou_thresh
-        #     data.filter(keep_mask)
+        if self.pred_iou_thresh > 0.0:
+            keep_mask = data["iou_preds"] > self.pred_iou_thresh
+            data.filter(keep_mask)
 
         # Calculate stability score
         data["stability_score"] = calculate_stability_score(
             data["masks"], self.predictor.model.mask_threshold, self.stability_score_offset
         )
-        # DO NOT filter by stability score
-        # if self.stability_score_thresh > 0.0:
-        #     keep_mask = data["stability_score"] >= self.stability_score_thresh
-        #     data.filter(keep_mask)
+
+        if self.stability_score_thresh > 0.0:
+            keep_mask = data["stability_score"] >= self.stability_score_thresh
+            data.filter(keep_mask)
 
         # Threshold masks and calculate boxes
         data["probs"] = batched_mask_to_prob(data["masks"])
@@ -387,7 +389,8 @@ class SamAutomaticMaskAndProbabilityGenerator(SamAutomaticMaskGenerator):
             data.filter(keep_mask)
 
         # apply sobel filter for probability map
-        data["probs"] = batched_sobel_filter(data["probs"], data["masks"])
+        data["probs"] = batched_sobel_filter(data["probs"], data["masks"],
+                                             bzp=self.bzp)
 
         # set prob to 0 for pixels outside of crop box
         # data["probs"] = batched_crop_probs(data["probs"], data["boxes"])

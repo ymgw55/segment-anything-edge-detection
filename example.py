@@ -21,7 +21,7 @@ def normalize_image(image):
 def main():
     device = "cuda"
     sam = sam_model_registry["default"](
-        checkpoint="/working/model/sam_vit_h_4b8939.pth")
+        checkpoint="model/sam_vit_h_4b8939.pth")
     sam.to(device=device)
     generator = SamAutomaticMaskAndProbabilityGenerator(sam)
 
@@ -40,13 +40,13 @@ def main():
 
     edges = normalize_image(p_max)
     edge_detection = cv2.ximgproc.createStructuredEdgeDetection(
-        '/working/model/model.yml.gz')
+        'model/model.yml.gz')
     orimap = edge_detection.computeOrientation(edges)
     edges = edge_detection.edgesNms(edges, orimap)
 
     # make output directory
-    Path('output/pred/example').mkdir(parents=True, exist_ok=True)
-    plt.imsave('output/pred/example/edge.png', edges, cmap='binary')
+    Path('output/example').mkdir(parents=True, exist_ok=True)
+    plt.imsave('output/example/edge.png', edges, cmap='binary')
 
 
 if __name__ == "__main__":

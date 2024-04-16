@@ -190,5 +190,7 @@ cython_debug/
 ############ Additional files ############
 .vscode
 .DS_Store
-output
-*.cpp
+output/
+model/
+scripts/
+data/

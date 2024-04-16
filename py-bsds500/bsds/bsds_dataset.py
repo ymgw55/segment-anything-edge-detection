@@ -7,7 +7,7 @@ from skimage.io import imread
 from scipy.io import loadmat
 
 
-class BSDSDataset (object):
+class Dataset (object):
     """
     BSDS dataset wrapper
 
@@ -16,22 +16,17 @@ class BSDSDataset (object):
 
     Attribtes:
 
-    bsds_path - the root path of the dataset
-    data_path - the path of the data directory within the root
+    data_path - the root path of the dataset
     images_path - the path of the images directory within the data dir
     gt_path - the path of the groundTruth directory within the data dir
     train_sample_names - a list of names of training images
     val_sample_names - a list of names of validation images
     test_sample_names - a list of names of test images
     """
-    def __init__(self, bsds_path):
-        """
-        Constructor
+    def __init__(self, data_path, ext):
 
-        :param bsds_path: the path to the root of the BSDS dataset
-        """
-        self.bsds_path = bsds_path
-        self.data_path = os.path.join(bsds_path, 'BSDS500', 'data')
+        self.ext = ext
+        self.data_path = data_path
         self.images_path = os.path.join(self.data_path, 'images')
         self.gt_path = os.path.join(self.data_path, 'groundTruth')
 
@@ -39,14 +34,18 @@ class BSDSDataset (object):
         self.val_sample_names = self._sample_names(self.images_path, 'val')
         self.test_sample_names = self._sample_names(self.images_path, 'test')
 
-    @staticmethod
-    def _sample_names(dir, subset):
+    def _sample_names(self, dir, subset):
         names = []
-        files = os.listdir(os.path.join(dir, subset))
+        path = os.path.join(dir, subset)
+        
+        if not os.path.exists(path):
+            return names
+
+        files = os.listdir(path)
         for fn in files:
             dir, filename = os.path.split(fn)
             name, ext = os.path.splitext(filename)
-            if ext.lower() == '.jpg':
+            if ext.lower() == self.ext.lower():
                 names.append(os.path.join(subset, name))
         return names
 
@@ -58,7 +57,7 @@ class BSDSDataset (object):
         :param name: the sample name
         :return: a (H,W,3) array containing the image, scaled to range [0,1]
         """
-        path = os.path.join(self.images_path, name + '.jpg')
+        path = os.path.join(self.images_path, name + self.ext)
         return img_as_float(imread(path))
 
     def get_image_shape(self, name):
@@ -69,7 +68,7 @@ class BSDSDataset (object):
         :param name: the sample name
         :return: a tuple of the form `(height, width, channels)`
         """
-        path = os.path.join(self.images_path, name + '.jpg')
+        path = os.path.join(self.images_path, name + self.ext)
         img = Image.open(path)
         return img.height, img.width, 3
 
@@ -128,7 +127,7 @@ class BSDSDataset (object):
         :return: a list of (H,W) arrays, each of which contains a
         segmentation ground truth
         """
-        gt = BSDSDataset.load_ground_truth_mat(path)
+        gt = Dataset.load_ground_truth_mat(path)
         num_gts = gt.shape[1]
         return [gt[0,i]['Segmentation'][0,0].astype(np.int32) for i in range(num_gts)]
 
@@ -141,7 +140,7 @@ class BSDSDataset (object):
         :return: a list of (H,W) arrays, each of which contains a
         boundary ground truth
         """
-        gt = BSDSDataset.load_ground_truth_mat(path)
+        gt = Dataset.load_ground_truth_mat(path)
         num_gts = gt.shape[1]
         return [gt[0,i]['Boundaries'][0,0] for i in range(num_gts)]
 
@@ -240,7 +239,7 @@ class BSDSHEDAugDataset (object):
         parameters.
         The sample name `name` should come from the `train_sample_names`,
         `val_sample_names` and `test_sample_names` attributes of a
-        `BSDSDataset` instance.
+        `Dataset` instance.
         The `scale`, `rot` and `flip` augmentation parameters should
         come from `AUG_SCALES`, `AUG_ROTS` and `AUG_FLIPS` attributes
         of the `BSDSHEDAugDataset` class
@@ -259,7 +258,7 @@ class BSDSHEDAugDataset (object):
         and augmentation parameters.
         The sample name `name` should come from the `train_sample_names`,
         `val_sample_names` and `test_sample_names` attributes of a
-        `BSDSDataset` instance.
+        `Dataset` instance.
         The `scale`, `rot` and `flip` augmentation parameters should
         come from `AUG_SCALES`, `AUG_ROTS` and `AUG_FLIPS` attributes
         of the `BSDSHEDAugDataset` class

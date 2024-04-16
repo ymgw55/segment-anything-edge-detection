@@ -16,7 +16,7 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip install --upgrade pip && \
     pip install -r /tmp/requirements.txt
 
-RUN pip install git+https://github.com/facebookresearch/segment-anything.git opencv-contrib-python pycocotools matplotlib onnxruntime onnx
+RUN pip install git+https://github.com/facebookresearch/segment-anything.git
 
 # Language settings
 ENV LANG C.UTF-8
@@ -25,5 +25,3 @@ ENV LANGUAGE en_US
 # Directory settings for login
 WORKDIR /working
 RUN chmod 777 /working
-
-ENV PYTHONPATH /working/src

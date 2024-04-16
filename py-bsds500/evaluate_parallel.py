@@ -8,14 +8,15 @@ import tqdm
 from skimage.io import imread
 from skimage.util import img_as_float
 
-from bsds import evaluate_boundaries
-from bsds.bsds_dataset import BSDSDataset
+from bsds import evaluate_boundaries_parallel as evaluate_boundaries
+from bsds.bsds_dataset import Dataset
+from pathlib import Path
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Test output')
-    parser.add_argument('bsds_path', type=str,
-                        help='the root path of the BSDS-500 dataset')
+    parser.add_argument('data_path', type=str,
+                        help='the root path of the dataset')
     parser.add_argument('pred_path', type=str,
                         help='the root path of the predictions')
     parser.add_argument('val_test', type=str,
@@ -24,18 +25,29 @@ def parse_args():
                         help='the number of thresholds')
     parser.add_argument('--suffix_ext', type=str, default='.png',
                         help='suffix and extension')
+    parser.add_argument('--num_workers', type=int, default=4,
+                        help='number of workers')
+    parser.add_argument('--max_dist', type=float, default=0.0075)
     args = parser.parse_args()
     return args
 
 
 def main():
     args = parse_args()
-    bsds_path = args.bsds_path
+    data_path = args.data_path
     pred_path = args.pred_path
     val_test = args.val_test
     suffix_ext = args.suffix_ext
     thresholds = args.thresholds
     thresholds = thresholds.strip()
+    num_workers = args.num_workers
+    max_dist = args.max_dist
+
+    if 'BSDS500' in data_path:
+        ext = '.jpg'
+    elif 'NYUDv2' in data_path:
+        ext = '.png'
+
     try:
         n_thresholds = int(thresholds)
         thresholds = n_thresholds
@@ -54,7 +66,7 @@ def main():
                   'should be a python list of ints (`[a, b, c]`)')
             sys.exit()
 
-    ds = BSDSDataset(bsds_path)
+    ds = Dataset(data_path, ext)
 
     if val_test == 'val':
         SAMPLE_NAMES = ds.val_sample_names
@@ -77,8 +89,9 @@ def main():
                              (0, tgt_shape[1]-pred.shape[1])], mode='constant')
         return pred
 
-    stem = os.path.basename(pred_path)
-    output_dir = f'../output/result/{stem}/{val_test}'
+    output_dir = Path(pred_path) / 'results'
+    print(f'output_dir: {output_dir}')
+
     os.makedirs(output_dir, exist_ok=True)
     results_path = os.path.join(f'{output_dir}',
                                 f'results_thr{thresholds}.pkl')
@@ -91,7 +104,8 @@ def main():
         sample_results, threshold_results, overall_result = \
             evaluate_boundaries.pr_evaluation(
                 thresholds, SAMPLE_NAMES, load_gt_boundaries,
-                load_pred, progress=tqdm.tqdm)
+                load_pred, progress=tqdm.tqdm, num_workers=num_workers,
+                max_dist=max_dist)
         results = (SAMPLE_NAMES, sample_results,
                    threshold_results, overall_result)
         with open(results_path, 'wb') as f:
@@ -107,12 +121,9 @@ def main():
         ps.append(res.precision)
     ap = np.trapz(ps[::-1], rs[::-1])
 
-    threshold_index = next(i for i, p in enumerate(ps) if p >= 0.5)
-    r50 = rs[threshold_index]
-
     with open(os.path.join(f'{output_dir}', f'results_thr{thresholds}.txt'),
               'w') as f:
-        text = f'ODS: {ods:.3f}, OIS: {ois:.3f} AP: {ap:.3f} R50: {r50:.3f}'
+        text = f'ODS: {ods:.3f}, OIS: {ois:.3f} AP: {ap:.3f}'
         print(text, file=f)
         print(text)
 
