@@ -23,7 +23,7 @@ def main():
     sam = sam_model_registry["default"](
         checkpoint="model/sam_vit_h_4b8939.pth")
     sam.to(device=device)
-    generator = SamAutomaticMaskAndProbabilityGenerator(sam)
+    generator = SamAutomaticMaskAndProbabilityGenerator(sam, pred_iou_thresh = 0.88, stability_score_thresh = 0.95)
 
     img_path = 'assets/fish.jpg'
     image = cv2.imread(img_path)

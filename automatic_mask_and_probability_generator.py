@@ -95,10 +95,11 @@ def batched_sobel_filter(probs: torch.Tensor, masks: torch.Tensor, bzp: int
         # Boundary zero padding (BZP). 
         # See "Zero-Shot Edge Detection With SCESAME: Spectral 
         # Clustering-Based Ensemble for Segment Anything Model Estimation".
-        probs[i, 0, 0:bzp, :] = 0
-        probs[i, 0, -bzp:, :] = 0
-        probs[i, 0, :, 0:bzp] = 0
-        probs[i, 0, :, -bzp:] = 0
+        if bzp > 0:
+          probs[i, 0, 0:bzp, :] = 0
+          probs[i, 0, -bzp:, :] = 0
+          probs[i, 0, :, 0:bzp] = 0
+          probs[i, 0, :, -bzp:] = 0
 
     # Remove the channel dimension
     probs = probs.squeeze(1)
@@ -125,6 +126,8 @@ class SamAutomaticMaskAndProbabilityGenerator(SamAutomaticMaskGenerator):
         output_mode: str = "binary_mask",
         nms_threshold: float = 0.7,
         bzp: int = 0,
+        pred_iou_thresh_filtering=False,
+        stability_score_thresh_filtering=False,
     ) -> None:
         """
         Using a SAM model, generates masks for the entire image.
@@ -189,6 +192,9 @@ class SamAutomaticMaskAndProbabilityGenerator(SamAutomaticMaskGenerator):
         )
         self.nms_threshold = nms_threshold
         self.bzp = bzp
+        self.pred_iou_thresh_filtering = pred_iou_thresh_filtering
+        self.stability_score_thresh_filtering = \
+            stability_score_thresh_filtering
 
     @torch.no_grad()
     def generate(self, image: np.ndarray) -> List[Dict[str, Any]]:
@@ -355,7 +361,7 @@ class SamAutomaticMaskAndProbabilityGenerator(SamAutomaticMaskGenerator):
         )
         del masks
 
-        if self.pred_iou_thresh > 0.0:
+        if self.pred_iou_thresh_filtering and self.pred_iou_thresh > 0.0:
             keep_mask = data["iou_preds"] > self.pred_iou_thresh
             data.filter(keep_mask)
 
@@ -364,7 +370,8 @@ class SamAutomaticMaskAndProbabilityGenerator(SamAutomaticMaskGenerator):
             data["masks"], self.predictor.model.mask_threshold, self.stability_score_offset
         )
 
-        if self.stability_score_thresh > 0.0:
+        if self.stability_score_thresh_filtering and \
+            self.stability_score_thresh > 0.0:
             keep_mask = data["stability_score"] >= self.stability_score_thresh
             data.filter(keep_mask)
 

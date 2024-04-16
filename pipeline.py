@@ -34,9 +34,9 @@ def get_args():
                         help='Number of points per side.')
     parser.add_argument('--points_per_batch', type=int, default=64,
                         help='Number of points per batch')
-    parser.add_argument('--pred_iou_thresh', type=float, default=0.00,
+    parser.add_argument('--pred_iou_thresh', type=float, default=0.88,
                         help='Prediction IOU threshold')
-    parser.add_argument('--stability_score_thresh', type=float, default=0.00,
+    parser.add_argument('--stability_score_thresh', type=float, default=0.95,
                         help='Stability score threshold')
     parser.add_argument('--stability_score_offset', type=float, default=1.0,
                         help='Stability score offset')
@@ -59,6 +59,11 @@ def get_args():
                         help='NMS threshold')
     parser.add_argument('--bzp', type=int, default=0,
                         help='boundary zero padding')
+    parser.add_argument('--pred_iou_thresh_filtering', action='store_true',
+                        help='filter by pred_iou_thresh')
+    parser.add_argument('--stability_score_thresh_filtering',
+                        action='store_true',
+                        help='filter by stability_score_thresh')
 
     # gaussian kernel size for post processing before edge nms
     parser.add_argument('--kernel_size', type=int, default=3,
@@ -118,7 +123,10 @@ def main():
         crop_n_points_downscale_factor=args.crop_n_points_downscale_factor,
         min_mask_region_area=args.min_mask_region_area,
         output_mode=args.output_mode,
-        nms_threshold=args.nms_threshold
+        nms_threshold=args.nms_threshold,
+        bzp=args.bzp,
+        pred_iou_thresh_filtering=args.pred_iou_thresh_filtering,
+        stability_score_thresh_filtering=args.stability_score_thresh_filtering,
     )
 
     kernel_size = args.kernel_size

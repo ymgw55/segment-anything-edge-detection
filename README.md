@@ -166,11 +166,14 @@ Other arguments for initializing `SamAutomaticMaskAndProbabilityGenerator` can b
   --nms_threshold NMS_THRESHOLD
                         NMS threshold
   --bzp BZP             boundary zero padding
+  --pred_iou_thresh_filtering
+                        filter by pred_iou_thresh
+  --stability_score_thresh_filtering
+                        filter by stability_score_thresh
   --kernel_size KERNEL_SIZE
                         kernel size
 ```
 
-Note that the default values for `SamAutomaticMaskGenerator` are `pred_iou_thresh = 0.88` and `stability_score_thresh = 0.95`. However, for `SamAutomaticMaskAndProbabilityGenerator`, these values are set to `0.00` and `0.00`, respectively.
 See [6] for more details about boundary zero padding.
 
 The output result is generated in `output_${dataset}/exp${exp_num}/${data_split}`.
@@ -231,6 +234,6 @@ The following is a list of studies on SAM and edge detection. Please let me know
 Jianmin Ji, and Yanyong Zhang. [EdgeCalib: Multi-Frame Weighted Edge Features for AutomaticTargetless LiDAR-Camera Calibration](https://arxiv.org/abs/2310.16629). arXiv 2023.
 - Hiroaki Yamagiwa, Yusuke Takase, Hiroyuki Kambe, and Ryosuke Nakamoto. [Zero-Shot Edge Detection With SCESAME: Spectral Clustering-Based Ensemble for Segment Anything Model Estimation](https://openaccess.thecvf.com/content/WACV2024W/Pretrain/html/Yamagiwa_Zero-Shot_Edge_Detection_With_SCESAME_Spectral_Clustering-Based_Ensemble_for_Segment_WACVW_2024_paper.html). WACV Workshop 2024.
 
-# contribution
+# Contribution
 
 I may be slow to respond, but everyone is welcome to contribute. 
