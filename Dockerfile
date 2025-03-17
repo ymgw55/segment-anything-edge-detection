@@ -19,8 +19,20 @@ RUN pip install --upgrade pip && \
 RUN pip install git+https://github.com/facebookresearch/segment-anything.git
 
 # Language settings
-ENV LANG C.UTF-8
-ENV LANGUAGE en_US
+ENV LANG=C.UTF-8
+ENV LANGUAGE=en_US
+
+# Create the user.
+ARG USERNAME
+ARG USER_UID
+ARG USER_GID
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME \
+    && rm -rf /var/lib/apt/lists/*
 
 # Directory settings for login
 WORKDIR /working

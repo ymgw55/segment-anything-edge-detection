@@ -192,5 +192,4 @@ cython_debug/
 .DS_Store
 output/
 model/
-scripts/
 data/

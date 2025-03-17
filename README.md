@@ -10,28 +10,27 @@ The image on the left is taken from the BSDS. The middle is the ground truth edg
 
 ## Docker
 
-This repository is intended to be run in a Docker environment. If you are not familiar with Docker, please set up an environment with `torch==1.11.0` and install the packages listed in [docker/requirements.txt](docker/requirements.txt) accordingly.
+This repository is intended to be run in a Docker environment. If you are not familiar with Docker, please install the packages listed in [requirements.txt](requirements.txt).
 
-### Build
+### Docker build
 
-Please create a Docker image as follows:
-
-```bash
-docker build -t ${USER}/samed docker
-```
-
-### Run
-
-Execution as root should be avoided if possible. For example, refer to the [docker document](https://docs.docker.com/engine/reference/commandline/run/) to properly set the `-u` option.
-
-If you don't mind running as root, you can execute the Docker container as follows:
+Create a Docker image as follows:
 
 ```bash
-docker run --rm -it --name samed_container \
---gpus device=0 \
--v $PWD:/working \
-${USER}/samed bash
+$ bash script/docker/build.sh
 ```
+
+### Environment variable
+
+Set the `DOCKER_HOME` environment variable to specify the path of the directory to be mounted as the home directory inside the Docker container.
+```bash
+$ export DOCKER_HOME="path/to/your/docker_home"
+```
+
+### Docker run
+Run the Docker container by passing the GPU ID as an argument:
+```bash
+$ bash script/docker/run.sh 0
 
 ---
 
