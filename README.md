@@ -31,6 +31,7 @@ $ export DOCKER_HOME="path/to/your/docker_home"
 Run the Docker container by passing the GPU ID as an argument:
 ```bash
 $ bash script/docker/run.sh 0
+```
 
 ---
 
