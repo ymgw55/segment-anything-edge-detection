@@ -8,6 +8,8 @@ This repository provides code for performing edge detection using the Automatic 
 
 The image on the left is taken from the BSDS. The middle is the ground truth edge. The image on the right is the result of applying edge detection.
 
+---
+
 ## Docker
 
 This repository is intended to be run in a Docker environment. If you are not familiar with Docker, please install the packages listed in [requirements.txt](requirements.txt).
