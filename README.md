@@ -19,13 +19,13 @@ This repository is intended to be run in a Docker environment. If you are not fa
 Create a Docker image as follows:
 
 ```bash
-$ bash script/docker/build.sh
+$ bash scripts/docker/build.sh
 ```
 
 ### Docker run
 Run the Docker container by passing the GPU ID as an argument:
 ```bash
-$ bash script/docker/run.sh 0
+$ bash scripts/docker/run.sh 0
 ```
 
 ---
