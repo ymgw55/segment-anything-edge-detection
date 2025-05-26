@@ -22,13 +22,6 @@ Create a Docker image as follows:
 $ bash script/docker/build.sh
 ```
 
-### Environment variable
-
-Set the `DOCKER_HOME` environment variable to specify the path of the directory to be mounted as the home directory inside the Docker container.
-```bash
-$ export DOCKER_HOME="path/to/your/docker_home"
-```
-
 ### Docker run
 Run the Docker container by passing the GPU ID as an argument:
 ```bash
